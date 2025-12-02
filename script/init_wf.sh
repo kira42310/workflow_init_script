@@ -1,6 +1,43 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
+py_version="3.11"
+elapse="1:00:00"
+group_name=
+
+while [ ! $# -eq 0 ]; do
+  case "$1" in
+    -g | --group_name)
+      if [ "$2" ]; then
+	group_name=$2
+	shift
+      else
+	echo "Please fill the group name"
+	exit 1
+      fi
+      ;;
+    --python_version)
+      if [ "$2" ]; then
+	py_version=$2
+	shift
+      else
+	echo "Please fill the Python version"
+	exit 1
+      fi
+      ;;
+    --alloc_time)
+      if [ "$2" ]; then
+	elapse=$2
+	shift
+      else
+	 echo "Please fill the allocation time"
+	 exit 1
+      fi
+      ;;
+  esac
+  shift
+done
+
+if [ -z $group_name ]; then
   echo "Please provide the group name"
   exit 1
 fi
@@ -10,14 +47,7 @@ echo "Initialize the workflow setup"
 echo "========================================"
 echo "Load Spack Python module"
 . /vol0004/apps/oss/spack/share/spack/setup-env.sh
-spack load /so5pyv6 # python@3.11.6@gcc
-
-echo "========================================"
-echo "Check uv is instlled. If not, this script will install uv"
-if ! uv --version; then
-  echo "Install UV"
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-fi
+spack load /ogthatq # set py-uv
 
 echo "========================================"
 echo "Create Virtual Environment for Server"
@@ -27,7 +57,7 @@ if ! [ -d $env_dir ]; then
 fi
 server_dir="${env_dir}/wf_server"
 server_bin="${server_dir}/bin"
-(cd $(echo $env_dir | tr -d '\r')  && uv venv wf_server)
+(cd $(echo $env_dir | tr -d '\r')  && uv venv --python $py_version wf_server)
 
 echo "========================================"
 echo "Install Prefect Workflow, Integration, Wrapper, and PSI/J"
@@ -44,7 +74,9 @@ rm -rf psij_pjsub_template
 
 echo "========================================"
 echo "Execute the Python Envionment Setup on Fugaku"
-pjsub -g $1 init_wf_fugaku.sh --no-check-directory
+#export py_version
+echo $py_version > python_version.tmp
+pjsub --no-check-directory -g $group_name -L "elapse=$elapse" init_wf_fugaku.sh
 sleep 1
 pjstat
 echo "Please wait for the initilize Fugaku compute node to finished by checking with pjstat command"

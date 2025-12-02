@@ -1,24 +1,43 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
+elapse="1:00:00"
+group_name=
+
+while [ ! $# -eq 0 ]; do
+  case "$1" in
+    -g | --group_name)
+      if [ "$2" ]; then
+	group_name=$2
+	shift
+      else
+	 echo "Please fill the group name"
+	 exit 1
+       fi
+      ;;
+    --alloc_time)
+      if [ "$2" ]; then
+	elapse=$2
+	shift
+      else
+	echo "Please fill the allocation time"
+	exit 1
+      fi
+      ;;
+  esac
+  shift
+done
+
+if [ -z $group_name ]; then
   echo "Please provide the group name"
   exit 1
 fi
 
-echo "Initialize the workflow setup"
+echo "Syncing libraries"
 
 echo "========================================"
 echo "Load Spack Python module"
 . /vol0004/apps/oss/spack/share/spack/setup-env.sh
-spack load /so5pyv6 # python@3.11.6@gcc
-
-echo "========================================"
-echo "Check uv is instlled. If not, exit"
-if ! uv --version; then
-  echo "Please run the initialize script first"
-  exit 1
-fi
-
+spack load /ogthatq # set py-uv
 
 echo "========================================"
 echo "Save requirements.txt file"
@@ -32,10 +51,10 @@ unset VIRTUAL_ENV
 
 echo "========================================"
 echo "Execute the Python libraries sync on Fugaku"
-pjsub -g $1 sync_fugaku.sh --no-check-directory
+pjsub --no-check-directory -g $group_name -L "elapse=$elapse" sync_fugaku.sh
 sleep 1
 pjstat
 echo "Please wait for the initilize Fugaku compute node to finished by checking with pjstat command"
 echo "To use the workflow, activate the Python virual environment in ${server_bin}/activate"
 
-echo "==================== Initilize Successful ===================="
+echo "==================== Sync Successful ===================="
