@@ -1,8 +1,4 @@
 #!/bin/bash -x
-#PJM -L "node=1"
-#PJM -L "rscgrp=small"
-#PJM -x PJM_LLIO_GFSCACHE=/vol0004:/vol0003:/vol0002
-#
 
 echo "Sync libraries on Fugaku compute node"
 

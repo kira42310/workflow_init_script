@@ -2,6 +2,7 @@
 
 py_version="3.11"
 elapse="1:00:00"
+queue="q-IBM-S"
 group_name=
 
 while [ ! $# -eq 0 ]; do
@@ -12,6 +13,15 @@ while [ ! $# -eq 0 ]; do
 	shift
       else
 	echo "Please fill the group name"
+	exit 1
+      fi
+      ;;
+    -q | --queue)
+      if [ "$2" ]; then
+	queue=$2
+	shift
+      else
+	echo "Please fill the queue name"
 	exit 1
       fi
       ;;
@@ -78,7 +88,7 @@ rm -rf psij_pjsub_template
 echo "========================================"
 echo "Execute the Python Envionment Setup on Fugaku"
 echo $py_version > python_version.tmp
-pjsub --no-check-directory -g $group_name -L "elapse=$elapse" init_wf_fugaku.sh
+pjsub --no-check-directory -g $group_name -L "elapse=$elapse" -L "rscgrp=$queue" -L "node=1" -x PJM_LLIO_GFSCACHE=/vol0004:/vol0003:/vol0002 init_wf_fugaku.sh
 sleep 1
 pjstat
 echo "Please wait for the initilize Fugaku compute node to finished by checking with pjstat command"

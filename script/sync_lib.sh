@@ -1,6 +1,7 @@
 #!/bin/bash
 
 elapse="1:00:00"
+queue="q-IBM-S"
 group_name=
 
 while [ ! $# -eq 0 ]; do
@@ -11,6 +12,15 @@ while [ ! $# -eq 0 ]; do
 	shift
       else
 	 echo "Please fill the group name"
+	 exit 1
+       fi
+      ;;
+    -q | --queue)
+      if [ "$2" ]; then
+	queue=$2
+	shift
+      else
+	 echo "Please fill the queue name"
 	 exit 1
        fi
       ;;
@@ -51,7 +61,7 @@ unset VIRTUAL_ENV
 
 echo "========================================"
 echo "Execute the Python libraries sync on Fugaku"
-pjsub --no-check-directory -g $group_name -L "elapse=$elapse" sync_fugaku.sh
+pjsub --no-check-directory -g $group_name -L "elapse=$elapse" -L "rscgrp=$queue" -L "node=1" -x PJM_LLIO_GFSCACHE=/vol0004:/vol0003:/vol0002 sync_fugaku.sh
 sleep 1
 pjstat
 echo "Please wait for the initilize Fugaku compute node to finished by checking with pjstat command"
