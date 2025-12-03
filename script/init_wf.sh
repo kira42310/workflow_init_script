@@ -57,29 +57,32 @@ if ! [ -d $env_dir ]; then
 fi
 server_dir="${env_dir}/wf_server"
 server_bin="${server_dir}/bin"
+activate_bin="${server_bin}/activate"
+python_bin="${server_bin}/python"
 (cd $(echo $env_dir | tr -d '\r')  && uv venv --python $py_version wf_server)
 
 echo "========================================"
 echo "Install Prefect Workflow, Integration, Wrapper, and PSI/J"
-export VIRTUAL_ENV=$server_dir
+#export VIRTUAL_ENV=$server_dir
+. $(echo $activate_bin | tr -d '\r')
 uv pip install prefect --no-cache-dir
 uv pip install cloudpickle --no-cache-dir
 uv pip install psij-python --no-cache-dir
 uv pip install "git+https://github.com/kira42310/prefect-psij-integration" --no-cache-dir
 uv pip install "git+https://github.com/kira42310/psij_wrapper" --no-cache-dir
-unset VIRTUAL_ENV
+#unset VIRTUAL_ENV
 git clone https://github.com/kira42310/psij_pjsub_template.git
-( cd ./psij_pjsub_template && bash modify_psij.sh $(echo $server_dir | tr -d '\r') )
+( cd ./psij_pjsub_template && bash modify_psij.sh $(echo $python_bin | tr -d '\r') )
 rm -rf psij_pjsub_template
 
 echo "========================================"
 echo "Execute the Python Envionment Setup on Fugaku"
-#export py_version
 echo $py_version > python_version.tmp
 pjsub --no-check-directory -g $group_name -L "elapse=$elapse" init_wf_fugaku.sh
 sleep 1
 pjstat
 echo "Please wait for the initilize Fugaku compute node to finished by checking with pjstat command"
 echo "To use the workflow, activate the Python virual environment in ${server_bin}/activate"
+echo "To install Python libraries, please use 'uv pip install <library_name>'"
 
 echo "==================== Initilize Successful ===================="

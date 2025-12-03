@@ -26,12 +26,14 @@ echo "Create Virtual Environment for Server"
 env_dir="${HOME}/workflow_env"
 compute_dir="${env_dir}/wf_compute"
 compute_bin="${compute_dir}/bin"
+activate_bin="${compute_bin}/activate"
 #(cd $(echo $env_dir | tr -d '\r')  && uv venv wf_compute --allow-existing)
 (cd $(echo $env_dir | tr -d '\r')  && uv venv --python $py_version wf_compute )
 
 echo "========================================"
 echo "Install Prefect Workflow, Integration, Wrapper, and PSI/J"
-export VIRTUAL_ENV=$compute_dir
+#export VIRTUAL_ENV=$compute_dir
+. $(echo $activate_bin | tr -d '\r' )
 uv pip install cloudpickle --no-cache-dir
 #target="${compute_dir}/lib/python3.11/site-packages"
 #$compute_bin/python -m pip install cloudpickle --no-cache-dir
