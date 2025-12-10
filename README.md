@@ -115,14 +115,14 @@ def n_mul( a, b ):
 @flow
 def small_test():
   cwd = os.getcwd()
-  with PSIJTaskRunner( instance = 'pjsub', job_spec = hpc_spec, work_directory = cwd, keep_files = True ) as tr:
+  with PSIJTaskRunner( instance = 'pjsub', job_spec = spec, work_directory = cwd, keep_files = True ) as tr:
     job = tr.submit(
       task = n_add,
       parameters = { 'a': 1, 'b': 2 }
     )
     c = job.result()
   print( f'a+b: {c}' )
-  with PSIJTaskRunner( instance = 'pjsub', job_spec = hpc_spec, work_directory = cwd, keep_files = True ) as tr:
+  with PSIJTaskRunner( instance = 'pjsub', job_spec = spec, work_directory = cwd, keep_files = True ) as tr:
     job = tr.submit(
       task = n_mul,
       parameters = { 'a': 2, 'b': c }
