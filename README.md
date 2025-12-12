@@ -23,6 +23,13 @@ bash ./init_wf.sh -g <group_name>
 ### Remark
 The main script `init_wf.sh` will set up the workflow server environment first and execute the `init_wf_fugaku.sh` file for set up the compute environment on Fugaku node.
 
+## Python packages installation
+
+After activate the workflow server virtual environment (`wf_server`), please use `uv` to install the Python packages by add `uv` command infront of the `pip` command. If you only use `pip` to install the Python package, it will install outside of the workflow virtual environment.
+```
+uv pip install <package name>
+```
+
 ## Sync libraries
 
 ### Executing the sync libraries script
