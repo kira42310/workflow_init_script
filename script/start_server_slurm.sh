@@ -1,4 +1,8 @@
 #!/bin/bash
+#SBATCH -p ondemand-reserved
+#SBATCH -c 8
+#SBATCH --time 400:00:00
+#SBATCH --mem 30g
 
 #while [ ! $# -eq 0 ]; do
 #  case "$1" in
@@ -55,5 +59,8 @@ python_bin="${server_bin}/python"
 #host=0.0.0.0
 host=$(hostname -f)
 port=$(python -c "import socket; s = socket.socket( socket.AF_INET, socket.SOCK_STREAM ); s.bind(('', 0)); addr = s.getsockname(); print( addr[1] ); s.close()")
+
+echo $SLURM_JOB_ID > "$env_dir/server_info"
+echo "$host:$port" >> "$env_dir/server_info"
 
 prefect server start --host $host --port $port
