@@ -69,6 +69,9 @@ server_dir="${env_dir}/wf_server"
 server_bin="${server_dir}/bin"
 activate_bin="${server_bin}/activate"
 python_bin="${server_bin}/python"
+database_dir="${env_dir}/database"
+db_tmp_dir="${env_dir}/db_tmp"
+container_dir="${env_dir}/container"
 (cd $(echo $env_dir | tr -d '\r')  && uv venv --python $py_version wf_server)
 
 echo "========================================"
@@ -95,4 +98,24 @@ echo "Please wait for the initilize Fugaku compute node to finished by checking 
 echo "To use the workflow, activate the Python virual environment in ${server_bin}/activate"
 echo "To install Python libraries, please use 'uv pip install <library_name>'"
 
-echo "==================== Initilize Successful ===================="
+echo "========================================"
+echo "Setup PostgreSQL Database for Prefect server"
+
+spartition="ondemand-reserved"
+scpu="8"
+smem="30g"
+stime="1:00:00"
+
+sbatch -p $spartition -c $scpu --mem $smem --time $stime init_postgres_slurm.sh
+sleep 5
+sacct
+
+echo "Please wait for the database setup to finished by checking with sacct command"
+echo "To start Prefect server, please execute the start_server_slurm.sh script"
+
+echo "========================================"
+echo "Copy start_server_slurm.sh script to $env_dir"
+
+cp start_server_slurm.sh $env_dir/start_server_slurm.sh
+
+echo "==================== Initilize Workflow Server Successful ===================="
