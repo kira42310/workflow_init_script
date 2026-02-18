@@ -72,7 +72,7 @@ python_bin="${server_bin}/python"
 database_dir="${env_dir}/database"
 db_tmp_dir="${env_dir}/db_tmp"
 container_dir="${env_dir}/container"
-(cd $(echo $env_dir | tr -d '\r')  && uv venv --python $py_version wf_server)
+(cd $(echo $env_dir | tr -d '\r')  && uv venv --python $py_version wf_server --managed-python)
 
 echo "========================================"
 echo "Install Prefect Workflow, Integration, Wrapper, and PSI/J"
@@ -81,6 +81,7 @@ echo "Install Prefect Workflow, Integration, Wrapper, and PSI/J"
 uv pip install prefect --no-cache-dir
 uv pip install cloudpickle --no-cache-dir
 uv pip install psij-python --no-cache-dir
+uv pip install pandas --no-cache-dir
 uv pip install "git+https://github.com/kira42310/prefect-psij-integration" --no-cache-dir
 uv pip install "git+https://github.com/kira42310/psij_wrapper" --no-cache-dir
 #unset VIRTUAL_ENV
@@ -96,7 +97,7 @@ sleep 1
 pjstat
 echo "Please wait for the initilize Fugaku compute node to finished by checking with pjstat command"
 echo "To use the workflow, activate the Python virual environment in ${server_bin}/activate"
-echo "To install Python libraries, please use 'uv pip install <library_name>'"
+echo "To install Python libraries, please load Python uv via spack (spack load /ogthatq) first and install libraries with uv (uv pip install <Package name>)"
 
 echo "========================================"
 echo "Setup PostgreSQL Database for Prefect server"
