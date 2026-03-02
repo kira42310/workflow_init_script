@@ -90,8 +90,111 @@ This script will allocate the Pre-post node and run the instant Prefect server w
 - The basic PSI/J spec can check the it on PSI/J website [link](https://exaworks.org/psij-python/docs/v/0.9.9/.generated/tree.html#jobspec)
 - The duration must declared with `datetime.timedelta` [link](https://docs.python.org/3/library/datetime.html#timedelta-objects)
 
+### Declare Flow, Task and TaskRunner
 
-### Simple code (No Quantum)
+In this section, we will show the sample code to run flow and submit the tasks with PSIJTaskRunner. There are four methods.
+
+We will share this task with every demonstration.
+
+```py
+@task
+def func_name( a, b ):
+  return a + b
+```
+
+1. Use `with` keyword
+
+```py
+@flow
+def workflow( ... ):
+  ...
+  with PSIJTaskRunner(  instance = 'job_scheduler_name', job_spec = spec ) as tr:
+    job = tr.submit(
+      task = func_name, # <---- assign without parenthesis
+      parameters = { 'a': 1, 'b': 2 } # <---- Must use Dict type here. If the function does not need argument, use `None`
+    )
+    result = job.result()
+  ...
+```
+
+2. Submit the job, wait, and get result
+
+```py
+@flow( task_runner=PSIJTaskRunner( instance = 'job_scheduler_name', job_spec = spec ) )
+def workflow( ... ):
+  ...
+  job = func_name.submit( 1, 2 ) # <---- can use Dict
+  job.wait()
+  result = job.result()
+  ...
+```
+
+3. Submit the job and get result (Not call wait) 
+
+```py
+@flow( task_runner=PSIJTaskRunner( instance = 'job_scheduler_name', job_spec = spec ) )
+def workflow( ... ):
+  ...
+  job = func_name.submit( 1, 2 )
+  result = job.result()
+  ...
+```
+
+4. one-line 
+
+```py
+@flow( task_runner=PSIJTaskRunner( instance = 'job_scheduler_name', job_spec = spec ) )
+def workflow( ... ):
+  ...
+  result = func_name.submit( 1, 2 ).result()
+  ...
+```
+
+5. Create Nested-flow (Main-workflow and sub-workflow)
+```py
+@flow( task_runner=PSIJTaskRunner( instance = 'job_scheduler_name', job_spec = single_node ) )
+def subflow1( ... ):
+  ...
+  result = func_name.submit( 1, 2 ).result()
+  ...
+
+@flow( task_runner=PSIJTaskRunner( instance = 'job_scheduler_name', job_spec = multi_node ) )
+def subflow2( ... ):
+  ...
+  result = some_multi_process_task.submit( ... ).result()
+  ...
+
+@flow
+def mainflow( ... ):
+  ...
+  subflow1( ... )
+  subflow2( ... )
+  ...
+```
+
+6. Concurrent tasks
+```py
+@flow( task_runner=PSIJTaskRunner( instance = 'job_scheduler_name', job_spec = spec ) )
+def workflow( ... ):
+  # All of the job will run in tandam if the job scheduler can allocate the resource for each job
+  j1 = func_name.submit( 1, 2 )
+  j2 = func_name.submit( 2, 3 )
+  j3 = func_name.submit( 3, 4 )
+  r1 = j1.result()
+  r3 = j3.result() # <---- It is possible to read the result from the j3 before j2. The flow will wait for j3 to finished first and read the data back even the result from j2 is ready before the j3 finished.
+  r2 = j2.result()
+```
+
+<!--
+### Parameters
+
+- Use `Dict`
+
+- Use `list`
+
+-->
+
+### Simple code 1 (No Quantum)
 
 ```python
 from prefect import task, flow
@@ -141,6 +244,12 @@ if __name__ == '__main__':
   df = small_test()
 ```
 
+### Simple code 2 (No Quantum)
+
+```py
+# under construction
+```
+
 ### Quantum-HPC hybrid code with Shor's algorithm
 
 ```python
@@ -161,8 +270,8 @@ hpc_spec = {
   'executable': '~/workflow_env/wf_compute/bin/python',
   'queue_name': 'small',
   'name': 'hpc_workflow_spec',
+  'duration': timedelta( hours = 4 ),
   'custom_attributes': {
-    'duration': timedelta( hours = 4 ),
     'group.a': '<group_name>',
     'pjsub_env.PJM_LLIO_GFSCACHE':'/vol0003:/vol0004:/vol0002:/vol0006',
     'node_shape.node': '1'
@@ -173,8 +282,8 @@ qc_spec = {
   'executable': '~/workflow_env/wf_compute/bin/python',
   'queue_name': 'q-IBM-S',
   'name': 'qc_workflow_spec',
+  'duration': timedelta( hours = 4 ),
   'custom_attributes': {
-    'duration': timedelta( hours = 4 ),
     'group.a': '<group_name>',
     'pjsub_env.PJM_LLIO_GFSCACHE':'/vol0003:/vol0004:/vol0002:/vol0006',
     'node_shape.node': '1'
@@ -409,4 +518,14 @@ int main(int argc, char** argv) {
     // Finalize the MPI environment.
     MPI_Finalize();
 }
+```
+
+## Use the workflow without Prefect
+
+#### Under contruction
+
+```py
+import psij_ext 
+
+#### Under construction ####
 ```
