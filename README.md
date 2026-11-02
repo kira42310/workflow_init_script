@@ -311,10 +311,7 @@ def shor_algorithm():
 @task
 def qc_task_func( ):
   # setup backend, select the device
-  service = QiskitRuntimeService(
-    channel='ibm_quantum_platform',
-    token='s5Ordaxv7UIEghpd_bEXXFPAKKa_hQVxdWPwwUCjC6hJ',
-    instance='crn:v1:bluemix:public:quantum-computing:us-east:a/fc93289da39b4de6b7c94ee611ed4500:21d9bef2-1abe-4001-b94f-5a102e406235::' )
+  service = QiskitRuntimeService(...)
   backend = service.backend( 'ibm_kobe' )
 
   # circuit construct
